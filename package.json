@@ -1,0 +1,33 @@
+{
+  "name": "snake-juice",
+  "version": "1.0.0",
+  "description": "Generate self signed certificates and private keys",
+  "keywords": [
+    "certificate",
+    "key pair",
+    "openssl",
+    "private key",
+    "public key",
+    "rsa",
+    "self signed",
+    "snake oil",
+    "x509"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"noImplicitAny\": false}' node_modules/.bin/mocha test/*.ts"
+  },
+  "author": "Sehrope Sarkuni <sehrope@jackdb.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/mocha": "^5.2.5",
+    "@types/node-forge": "^0.7.11",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.2.2"
+  },
+  "dependencies": {
+    "node-forge": "^0.8.0"
+  }
+}

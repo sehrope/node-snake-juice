@@ -1,0 +1,7 @@
+Makefile
+node_modules
+scratch
+src
+test
+.travis.yml
+.vscode
