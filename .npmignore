@@ -3,5 +3,6 @@ node_modules
 scratch
 src
 test
+tsconfig.json
 .travis.yml
 .vscode
