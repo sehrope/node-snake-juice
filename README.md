@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.org/sehrope/node-snake-juice.svg?branch=master)](https://travis-ci.org/sehrope/node-snake-juice)
 
 # Overview
-Generate self signed TLS certificates (i.e. "snake oil).
+Generate self signed (i.e. "snake oil certs") certificates and RSA key pairs.
 
 * [Install](#install)
 * [Usage](#usage)
@@ -69,7 +69,7 @@ const keyAndCert = await SnakeJuice.generate([
 ], 4096);
 ```
 
-## Create with a lot of customzied options
+## Create with a lot of customized options
 ```typescript
 const keyAndCert = await SnakeJuice.generate({
     // Too small for real usage but fine for testing
@@ -116,4 +116,3 @@ ISC. See the file [LICENSE](LICENSE).
 
 # Credits
 The real lifting is done by node-forge. Also, looking through the code for [selfsigned](https://www.npmjs.com/package/selfsigned) helped out a lot as well.
- 
