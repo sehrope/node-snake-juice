@@ -28,6 +28,6 @@
     "typescript": "^3.2.2"
   },
   "dependencies": {
-    "node-forge": "^0.8.0"
+    "node-forge": "^0.10.0"
   }
 }
