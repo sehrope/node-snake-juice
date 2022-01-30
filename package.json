@@ -30,5 +30,8 @@
   },
   "dependencies": {
     "node-forge": "^1.2.1"
-  }
+  },
+  "files": [
+    "lib"
+  ]
 }
