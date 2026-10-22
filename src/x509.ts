@@ -1,4 +1,5 @@
 import crypto = require('crypto');
+import net = require('net');
 import {
     tlv,
     sequence,
@@ -32,6 +33,7 @@ const OID_BASIC_CONSTRAINTS = '2.5.29.19';
 const OID_KEY_USAGE = '2.5.29.15';
 const OID_SUBJECT_ALT_NAME = '2.5.29.17';
 
+const SAN_TYPE_IP_ADDRESS = 7;
 const SAN_TYPE_REGISTERED_ID = 8;
 
 export interface CertificateAttribute {
@@ -63,10 +65,41 @@ function distinguishedName(attributes: CertificateAttribute[]): Buffer {
     }));
 }
 
+function ipv4Bytes(ip: string): number[] {
+    return ip.split('.').map(Number);
+}
+
+function ipAddressBytes(ip: string): Buffer {
+    if (net.isIPv4(ip)) {
+        return Buffer.from(ipv4Bytes(ip));
+    }
+    if (!net.isIPv6(ip)) {
+        throw new Error('Invalid IP address: ' + ip);
+    }
+    const [head, tail] = ip.split('::');
+    const toBytes = (part: string) => !part ? [] : part.split(':').reduce((bytes: number[], group) => {
+        // Trailing dotted IPv4, e.g. ::ffff:10.0.0.1
+        if (group.includes('.')) {
+            return bytes.concat(ipv4Bytes(group));
+        }
+        const n = parseInt(group, 16);
+        return bytes.concat([n >> 8, n & 0xff]);
+    }, []);
+    const headBytes = toBytes(head);
+    const tailBytes = toBytes(tail);
+    const zeros = new Array(16 - headBytes.length - tailBytes.length).fill(0);
+    return Buffer.from([...headBytes, ...zeros, ...tailBytes]);
+}
+
 function generalName(altName: CertificateAltName): Buffer {
-    const value = altName.type === SAN_TYPE_REGISTERED_ID
-        ? oidBytes(altName.value)
-        : Buffer.from(altName.value, 'latin1');
+    let value: Buffer;
+    if (altName.type === SAN_TYPE_IP_ADDRESS) {
+        value = ipAddressBytes(altName.value);
+    } else if (altName.type === SAN_TYPE_REGISTERED_ID) {
+        value = oidBytes(altName.value);
+    } else {
+        value = Buffer.from(altName.value, 'latin1');
+    }
     return tlv(0x80 | altName.type, value);
 }
 

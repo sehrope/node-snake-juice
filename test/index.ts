@@ -25,7 +25,9 @@ function checkHasSubjectAltName(keyAndCert: KeyAndCert, expectedType: SubjectAlt
     assert.ok(extension);
     const { altNames } = extension as any;
     assert.ok(altNames.some((altName: any) => {
-        return altName.type === expectedType && altName.value === expectedName;
+        // forge exposes the decoded address of IP entries as ip
+        const name = altName.type === SubjectAltNameType.IP_ADDRESS ? altName.ip : altName.value;
+        return altName.type === expectedType && name === expectedName;
     }));
 }
 
