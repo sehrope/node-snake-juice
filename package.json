@@ -18,6 +18,10 @@
   "scripts": {
     "test": "node_modules/.bin/tsc -p tsconfig.test.json && node_modules/.bin/mocha --timeout 10000 build/test/index.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sehrope/node-snake-juice.git"
+  },
   "author": "Sehrope Sarkuni <sehrope@jackdb.com>",
   "license": "ISC",
   "devDependencies": {
