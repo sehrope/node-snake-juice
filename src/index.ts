@@ -139,8 +139,8 @@ async function generate(opts: GenerateOptions | string | string[], keySizeInBits
     keySizeInBits = opts.keySizeInBits || 2048;
     const validity = opts.validity || {};
     const notBefore = validity.notBefore || new Date();
-    const notAfter = new Date();
-    notAfter.setDate(notBefore.getDate() + (validity.days || DEFAULT_VALIDITY_DAYS));
+    const notAfter = new Date(notBefore.getTime());
+    notAfter.setUTCDate(notAfter.getUTCDate() + (validity.days || DEFAULT_VALIDITY_DAYS));
     const attributes: Attribute[] = subjectToAttributes(opts.subject);
     const keyPair = await generateRsaKeyPairAsync(keySizeInBits);
     const certificate = createCertificate({

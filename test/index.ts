@@ -107,5 +107,8 @@ describe('generate(...)', () => {
         checkHasSubjectAltName(keyAndCert, SubjectAltNameType.DNS_NAME, 'a.example.com');
         checkHasSubjectAltName(keyAndCert, SubjectAltNameType.DNS_NAME, 'b.example.com');
         checkHasSubjectAltName(keyAndCert, SubjectAltNameType.IP_ADDRESS, '10.20.30.40');
+        const { validity } = forge.pki.certificateFromPem(keyAndCert.certificate);
+        assert.equal(validity.notBefore.toISOString(), '2018-01-01T12:00:00.000Z');
+        assert.equal(validity.notAfter.toISOString(), '2018-01-11T12:00:00.000Z');
     });
 });
