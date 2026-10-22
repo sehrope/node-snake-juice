@@ -1,34 +1,39 @@
 import { SnakeJuice, SubjectAltNameType, KeyAndCert } from '../src';
 import assert = require('assert');
-import forge = require('node-forge');
+import crypto = require('crypto');
+
+const SAN_PREFIXES: { [type: number]: string } = {
+    [SubjectAltNameType.RFC_822_NAME]: 'email',
+    [SubjectAltNameType.DNS_NAME]: 'DNS',
+    [SubjectAltNameType.URI]: 'URI',
+    [SubjectAltNameType.IP_ADDRESS]: 'IP Address',
+};
+
+function parseCertificate(keyAndCert: KeyAndCert) {
+    const certificate = new crypto.X509Certificate(keyAndCert.certificate);
+    assert.ok(certificate.verify(certificate.publicKey));
+    assert.ok(certificate.checkPrivateKey(crypto.createPrivateKey(keyAndCert.privateKey)));
+    return certificate;
+}
+
+function getCommonName(keyAndCert: KeyAndCert) {
+    const subject = parseCertificate(keyAndCert).subject || '';
+    const line = subject.split('\n').find((line) => line.startsWith('CN='));
+    return line && line.substring('CN='.length);
+}
 
 function checkHasCommonName(keyAndCert: KeyAndCert, expectedCommonName: string) {
-    const certificate = forge.pki.certificateFromPem(keyAndCert.certificate)
-    assert.ok(certificate.subject);
-    const attribute = certificate.subject.getField('CN');
-    assert.ok(attribute);
-    const commonName = attribute.value;
-    assert.equal(commonName, expectedCommonName);
+    assert.equal(getCommonName(keyAndCert), expectedCommonName);
 }
 
 function checkHasNoCommonName(keyAndCert: KeyAndCert) {
-    const certificate = forge.pki.certificateFromPem(keyAndCert.certificate)
-    assert.ok(certificate.subject);
-    const attribute = certificate.subject.getField('CN');
-    assert.ok(!attribute);
+    assert.equal(getCommonName(keyAndCert), undefined);
 }
 
 function checkHasSubjectAltName(keyAndCert: KeyAndCert, expectedType: SubjectAltNameType, expectedName: string) {
-    const certificate = forge.pki.certificateFromPem(keyAndCert.certificate)
-    assert.ok(certificate.subject);
-    const extension = certificate.getExtension('subjectAltName');
-    assert.ok(extension);
-    const { altNames } = extension as any;
-    assert.ok(altNames.some((altName: any) => {
-        // forge exposes the decoded address of IP entries as ip
-        const name = altName.type === SubjectAltNameType.IP_ADDRESS ? altName.ip : altName.value;
-        return altName.type === expectedType && name === expectedName;
-    }));
+    const { subjectAltName } = parseCertificate(keyAndCert);
+    assert.ok(subjectAltName);
+    assert.ok(subjectAltName.split(', ').includes(SAN_PREFIXES[expectedType] + ':' + expectedName));
 }
 
 describe('generate(...)', () => {
@@ -107,8 +112,8 @@ describe('generate(...)', () => {
         checkHasSubjectAltName(keyAndCert, SubjectAltNameType.DNS_NAME, 'a.example.com');
         checkHasSubjectAltName(keyAndCert, SubjectAltNameType.DNS_NAME, 'b.example.com');
         checkHasSubjectAltName(keyAndCert, SubjectAltNameType.IP_ADDRESS, '10.20.30.40');
-        const { validity } = forge.pki.certificateFromPem(keyAndCert.certificate);
-        assert.equal(validity.notBefore.toISOString(), '2018-01-01T12:00:00.000Z');
-        assert.equal(validity.notAfter.toISOString(), '2018-01-11T12:00:00.000Z');
+        const { validFrom, validTo } = parseCertificate(keyAndCert);
+        assert.equal(new Date(validFrom).toISOString(), '2018-01-01T12:00:00.000Z');
+        assert.equal(new Date(validTo).toISOString(), '2018-01-11T12:00:00.000Z');
     });
 });
