@@ -16,6 +16,9 @@
         "skipLibCheck": true,
         "sourceMap": true,
         "declaration": true,
+        "types": [
+            "node"
+        ],
         "lib": [
             "es2017",
             "dom"

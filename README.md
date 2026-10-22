@@ -19,7 +19,7 @@ Generate self signed (i.e. "snake oil certs") certificates and RSA key pairs.
 
 # Dependencies
 
-* [node-forge](https://www.npmjs.com/package/node-forge)
+None. Uses the `crypto` module built into Node.js.
 
 # Features
 * Simple interface for generating self signed certificates.
@@ -115,4 +115,4 @@ Then, to run the tests run:
 ISC. See the file [LICENSE](LICENSE).
 
 # Credits
-The real lifting is done by node-forge. Also, looking through the code for [selfsigned](https://www.npmjs.com/package/selfsigned) helped out a lot as well.
+Earlier versions were built on node-forge. Looking through the code for [selfsigned](https://www.npmjs.com/package/selfsigned) helped out a lot as well.

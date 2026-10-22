@@ -1,11 +1,14 @@
-import forge = require('node-forge');
+import crypto = require('crypto');
 import {
     toPositiveHex,
     DigestAlgorithmName,
-    getDigestAlgorithm,
-    pkiRsaGenerateKeyPairAsync,
-    pkiCertificateToAsn1,
+    generateRsaKeyPairAsync,
 } from './util';
+import {
+    createCertificate,
+    certificateToPem,
+    toCrlf,
+} from './x509';
 
 export enum SubjectAltNameType {
     OTHER_NAME = 0,
@@ -139,48 +142,26 @@ async function generate(opts: GenerateOptions | string | string[], keySizeInBits
     const notAfter = new Date();
     notAfter.setDate(notBefore.getDate() + (validity.days || DEFAULT_VALIDITY_DAYS));
     const attributes: Attribute[] = subjectToAttributes(opts.subject);
-    const extensions: any[] = [];
-    extensions.push({
-        name: 'basicConstraints',
-        cA: true,
+    const keyPair = await generateRsaKeyPairAsync(keySizeInBits);
+    const certificate = createCertificate({
+        keyPair,
+        serialNumber: toPositiveHex(crypto.randomBytes(9).toString('hex')),
+        notBefore,
+        notAfter,
+        attributes,
+        altNames: opts.subjectAltNames || [],
+        digestAlgorithm: opts.digestAlgorithm || 'sha256',
     });
-    extensions.push({
-        name: 'keyUsage',
-        keyCertSign: true,
-        digitalSignature: true,
-        nonRepudiation: true,
-        keyEncipherment: true,
-        dataEncipherment: true,
-    });
-    if (opts.subjectAltNames && opts.subjectAltNames.length > 0) {
-        extensions.push({
-            name: 'subjectAltName',
-            altNames: opts.subjectAltNames,
-        });
-    }
-    const keyPair = await pkiRsaGenerateKeyPairAsync(keySizeInBits);
-    const algorithm = getDigestAlgorithm(opts.digestAlgorithm);
-    const cert = forge.pki.createCertificate();
-    cert.serialNumber = toPositiveHex(forge.util.bytesToHex(forge.random.getBytesSync(9)));
-    cert.validity.notBefore = notBefore;
-    cert.validity.notAfter = notAfter;
-    cert.publicKey = keyPair.publicKey;
-    cert.setSubject(attributes);
-    cert.setIssuer(attributes);
-    cert.setExtensions(extensions);
-    cert.sign(keyPair.privateKey, algorithm);
-    const fingerprint = forge.md.sha1
-        .create()
-        .update(forge.asn1.toDer(pkiCertificateToAsn1(cert)).getBytes())
-        .digest()
-        .toHex()
+    const fingerprint = crypto.createHash('sha1')
+        .update(certificate)
+        .digest('hex')
         .match(/.{2}/g)
         .join(':');
 
     return {
-        privateKey: forge.pki.privateKeyToPem(keyPair.privateKey),
-        publicKey: forge.pki.publicKeyToPem(keyPair.publicKey),
-        certificate: forge.pki.certificateToPem(cert),
+        privateKey: toCrlf(keyPair.privateKey.export({ type: 'pkcs1', format: 'pem' }) as string),
+        publicKey: toCrlf(keyPair.publicKey.export({ type: 'spki', format: 'pem' }) as string),
+        certificate: certificateToPem(certificate),
         fingerprint,
     };
 }

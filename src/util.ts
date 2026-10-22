@@ -1,20 +1,16 @@
-import forge = require('node-forge');
+import crypto = require('crypto');
 
-export function pkiRsaGenerateKeyPairAsync(keySizeInBits: number): Promise<forge.pki.rsa.KeyPair> {
+export function generateRsaKeyPairAsync(keySizeInBits: number): Promise<crypto.KeyPairKeyObjectResult> {
     return new Promise((resolve, reject) => {
-        forge.pki.rsa.generateKeyPair({
-            bits: keySizeInBits,
-        }, (err, keyPair) => {
+        crypto.generateKeyPair('rsa', {
+            modulusLength: keySizeInBits,
+        }, (err, publicKey, privateKey) => {
             if (err) {
                 return reject(err);
             }
-            return resolve(keyPair);
+            return resolve({ publicKey, privateKey });
         });
     });
-}
-
-export function pkiCertificateToAsn1(cert: forge.pki.Certificate): forge.asn1.Asn1 {
-    return (forge.pki as any).certificateToAsn1(cert);
 }
 
 // a hexString is considered negative if it's most significant bit is 1
@@ -31,12 +27,3 @@ export function toPositiveHex(hexString: string) {
 }
 
 export type DigestAlgorithmName = 'sha1' | 'sha256';
-
-export function getDigestAlgorithm(name: DigestAlgorithmName = 'sha256') {
-    if (name === 'sha1') {
-        return forge.md.sha1.create();
-    } else if (name === 'sha256') {
-        return forge.md.sha256.create();
-    }
-    throw new Error('Invalid digest algorithm: ' + name);
-}
