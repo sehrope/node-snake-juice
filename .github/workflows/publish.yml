@@ -1,0 +1,38 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # For npm trusted publishing
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Use Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          # Staged publishing needs npm 11.15.0+
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - name: Check version is unreleased
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          if git ls-remote --exit-code --tags origin "refs/tags/v${version}" >/dev/null; then
+            echo "Tag v${version} already exists"
+            exit 1
+          fi
+          if npm view "snake-juice@${version}" version >/dev/null 2>&1; then
+            echo "snake-juice@${version} is already published"
+            exit 1
+          fi
+      - run: make clean
+      - run: make deps
+      - run: make build
+      - run: make test
+      # Goes live once approved with 2FA
+      - run: npm stage publish
