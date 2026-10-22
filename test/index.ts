@@ -116,4 +116,13 @@ describe('generate(...)', () => {
         assert.equal(new Date(validFrom).toISOString(), '2018-01-01T12:00:00.000Z');
         assert.equal(new Date(validTo).toISOString(), '2018-01-11T12:00:00.000Z');
     });
+
+    it('should create a keyAndCert with a non-ASCII commonName', async () => {
+        const keyAndCert = await SnakeJuice.generate({
+            subject: {
+                commonName: 'Soci\u00e9t\u00e9 \u65e5\u672c',
+            },
+        });
+        checkHasCommonName(keyAndCert, 'Soci\u00e9t\u00e9 \u65e5\u672c');
+    });
 });

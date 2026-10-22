@@ -58,10 +58,12 @@ export interface CertificateOptions {
 
 function distinguishedName(attributes: CertificateAttribute[]): Buffer {
     return sequence(...attributes.map(({ name, value }) => {
-        return set(sequence(
-            oid(ATTRIBUTE_OIDS[name]),
-            tlv(0x13, Buffer.from(value, 'latin1')),
-        ));
+        // RFC 5280 requires PrintableString for countryName and recommends
+        // UTF8String for the rest
+        const encoded = name === 'countryName'
+            ? tlv(0x13, Buffer.from(value, 'latin1'))
+            : tlv(0x0c, Buffer.from(value, 'utf8'));
+        return set(sequence(oid(ATTRIBUTE_OIDS[name]), encoded));
     }));
 }
 
