@@ -5,7 +5,7 @@
         "module": "nodenext",
         "moduleResolution": "nodenext",
         "target": "es2017",
-        "strict": false,
+        "strict": true,
         "noImplicitAny": true,
         "noUnusedLocals": true,
         "noImplicitReturns": true,

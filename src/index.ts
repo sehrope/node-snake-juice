@@ -60,7 +60,7 @@ interface Attribute {
     value: string;
 }
 
-function subjectToAttributes(subject: Subject) {
+function subjectToAttributes(subject: Subject | undefined) {
     if (!subject) {
         return [];
     }
@@ -155,7 +155,7 @@ async function generate(opts: GenerateOptions | string | string[], keySizeInBits
     const fingerprint = crypto.createHash('sha1')
         .update(certificate)
         .digest('hex')
-        .match(/.{2}/g)
+        .match(/.{2}/g)!
         .join(':');
 
     return {

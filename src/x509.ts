@@ -154,6 +154,6 @@ export function toCrlf(pem: string): string {
 }
 
 export function certificateToPem(der: Buffer): string {
-    const lines = der.toString('base64').match(/.{1,64}/g);
+    const lines = der.toString('base64').match(/.{1,64}/g)!;
     return toCrlf('-----BEGIN CERTIFICATE-----\n' + lines.join('\n') + '\n-----END CERTIFICATE-----\n');
 }
