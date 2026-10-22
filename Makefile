@@ -1,7 +1,7 @@
 default: clean build
 
 clean:
-	rm -rf lib
+	rm -rf lib build
 
 deps:
 	npm ci

@@ -24,7 +24,7 @@ function checkHasSubjectAltName(keyAndCert: KeyAndCert, expectedType: SubjectAlt
     const extension = certificate.getExtension('subjectAltName');
     assert.ok(extension);
     const { altNames } = extension as any;
-    assert.ok(altNames.some((altName) => {
+    assert.ok(altNames.some((altName: any) => {
         return altName.type === expectedType && altName.value === expectedName;
     }));
 }
