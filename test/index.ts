@@ -125,4 +125,18 @@ describe('generate(...)', () => {
         });
         checkHasCommonName(keyAndCert, 'Soci\u00e9t\u00e9 \u65e5\u672c');
     });
+
+    it('should reject subjectAltName types that need structured values', async () => {
+        for (const type of [
+            SubjectAltNameType.OTHER_NAME,
+            SubjectAltNameType.X400_ADDRESS,
+            SubjectAltNameType.DIRECTORY_NAME,
+            SubjectAltNameType.EDI_PARTY_NAME,
+        ]) {
+            await assert.rejects(SnakeJuice.generate({
+                keySizeInBits: 1024,
+                subjectAltNames: [{ type, value: 'x' }],
+            }), /Unsupported subjectAltName type/);
+        }
+    });
 });

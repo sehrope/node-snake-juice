@@ -33,6 +33,9 @@ const OID_BASIC_CONSTRAINTS = '2.5.29.19';
 const OID_KEY_USAGE = '2.5.29.15';
 const OID_SUBJECT_ALT_NAME = '2.5.29.17';
 
+const SAN_TYPE_RFC_822_NAME = 1;
+const SAN_TYPE_DNS_NAME = 2;
+const SAN_TYPE_URI = 6;
 const SAN_TYPE_IP_ADDRESS = 7;
 const SAN_TYPE_REGISTERED_ID = 8;
 
@@ -99,8 +102,13 @@ function generalName(altName: CertificateAltName): Buffer {
         value = ipAddressBytes(altName.value);
     } else if (altName.type === SAN_TYPE_REGISTERED_ID) {
         value = oidBytes(altName.value);
-    } else {
+    } else if (altName.type === SAN_TYPE_RFC_822_NAME
+        || altName.type === SAN_TYPE_DNS_NAME
+        || altName.type === SAN_TYPE_URI) {
         value = Buffer.from(altName.value, 'latin1');
+    } else {
+        // The remaining types are structured and cannot be built from a string
+        throw new Error('Unsupported subjectAltName type: ' + altName.type);
     }
     return tlv(0x80 | altName.type, value);
 }
